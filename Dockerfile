@@ -1,10 +1,10 @@
 FROM python:3.9-alpine3.13
 
 ENV PYTHONUNBUFFERED 1
+
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-WORKDIR /app
-EXPOSE 8000
+
 
 ARG DEV=false
 RUN python -m venv /py && \
@@ -25,5 +25,10 @@ RUN python -m venv /py && \
         --no-create-home \
         django-user
         # This is the user 'django-user' which we creating to run the application, don't want to run application with root user.
+
+COPY ./app /app
+WORKDIR /app
+EXPOSE 8000
+
 ENV PATH="/py/bin:$PATH"
 USER django-user

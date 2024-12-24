@@ -11,15 +11,16 @@ class ClientApp(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+    no_of_users = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # API details
-    api_key = models.CharField(max_length=255, unique=True)
-    api_key_expires = models.DateTimeField()
+    api_key = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    api_key_expires = models.DateTimeField(null=True, blank=True)
     plan = models.CharField(max_length=10, choices=API_PLANS.choices, default=API_PLANS.FREE)
 
     # Foreign key to reference User of Main App
-    owner = models.ForeignKey('core.User', related_name='client_apps', on_delete=models.CASCADE)
+    owner = models.ForeignKey('core.User', related_name='client_apps', on_delete=models.CASCADE, null=True, blank=True)
 
 
     def __str__(self):
@@ -42,8 +43,7 @@ class ClientUser(models.Model):
     # User details
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=255, null=True, blank=True)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     password = models.CharField(max_length=255, null=True, blank=True)  # Nullable for non-local logins
     avatar = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,7 +58,7 @@ class ClientUser(models.Model):
     email_verification_token = models.CharField(max_length=255, null=True, blank=True, unique=True)
 
     # Foreign key to reference ClientApp
-    client_app = models.ForeignKey('ClientApp', related_name='users', on_delete=models.CASCADE)
+    client_app = models.ForeignKey('ClientApp', related_name='users', on_delete=models.CASCADE, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
 
@@ -91,3 +91,13 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for {self.client_app.name} - {self.amount} {self.currency}"
+
+
+# Custom fields for ClientUser
+class ClientUserCustomField(models.Model):
+    user = models.ForeignKey('ClientUser', related_name='custom_fields', on_delete=models.CASCADE)
+    key = models.CharField(max_length=255)
+    value = models.TextField()
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"

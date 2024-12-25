@@ -24,5 +24,6 @@ urlpatterns = [
     path('<uuid:app_pk>/users/verify-email/<uuid:user_pk>/', client_user_views.ClientUserVerifyEmailView.as_view(), name='client_user_verify_email'),
 
     # Payment related views
-
+    path('pay/', subscription_views.start_payment, name="payment"),
+    path('payment/success/', subscription_views.handle_payment_success, name="payment_success")
 ]

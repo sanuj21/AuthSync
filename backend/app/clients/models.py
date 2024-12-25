@@ -24,7 +24,8 @@ class ApiPlan(models.Model):
     description = models.TextField(null=True, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    max_requests_per_month = models.IntegerField()
+    currency = models.CharField(max_length=10, default='INR')
+    max_requests_per_day = models.IntegerField()
     max_users = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -98,8 +99,9 @@ class ClientUser(models.Model):
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.FloatField()
-    currency = models.CharField(max_length=10)
+    currency = models.CharField(max_length=10, default='INR')
     status = models.CharField(max_length=10, choices=PAYMENT_STATUS.choices, default=PAYMENT_STATUS.PENDING)
+    order_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Payment provider details
     provider = models.CharField(max_length=50)  # e.g., "razorpay", "stripe", "paypal"

@@ -2,7 +2,7 @@ import uuid
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.utils.timezone import now
-from .models import ClientApp, ClientUser
+from .models import ClientApp, ClientUser, Subscription
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
@@ -12,19 +12,19 @@ class ClientAPIKeyAuthentication(BaseAuthentication):
     """
 
     def authenticate(self, request):
-        client_api_key = request.headers.get("api-key")
-        if not client_api_key:
+        api_key = request.headers.get("api-key")
+        if not api_key:
             raise AuthenticationFailed("Client-API-Key is missing")
 
         try:
-            client_app = ClientApp.objects.get(api_key=client_api_key)
-            if client_app.api_key_expires < now():
+            subscription = Subscription.objects.get(api_key=api_key)
+            if subscription.api_key_expires < now():
                 raise AuthenticationFailed("Client-API-Key has expired")
         except ClientApp.DoesNotExist:
             raise AuthenticationFailed("Invalid Client-API-Key")
 
         # Attach the client_app object to the request for further use
-        return (client_app, None)
+        return (subscription, None)
 
 
 

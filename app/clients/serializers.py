@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ClientApp, ClientUser, ClientUserCustomField
+from .models import ClientApp, ClientUser, ClientUserCustomField, Subscription
 
 class ClientAppSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,3 +18,9 @@ class ClientUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientUser
         fields = ['id', 'email', 'username', 'name', 'avatar', 'is_active', 'role', 'login_type', 'client_app', 'custom_fields']
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'

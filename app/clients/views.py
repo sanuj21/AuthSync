@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.timezone import now, timedelta
 from django.contrib.auth.hashers import make_password, check_password
 
-from .models import ClientApp, ClientUser
+from .models import ClientApp, ClientUser, ClientUserCustomField
 from .serializers import ClientAppSerializer, ClientUserSerializer
 from .permissions import isOwner
 from .authentications import ClientAPIKeyAuthentication, ClientUserJWTAuthentication
@@ -123,14 +123,30 @@ class ClientUserRegisterView(generics.CreateAPIView):
         # set the client app to reference the client user
         serializer.save(client_app=client_app)
 
+        User_Fields = [f.name for f in ClientUser._meta.get_fields()]
+        # find all the key which are not in user model, and put them in ClientUserCustomField model
+        for key in self.request.data:
+            if key not in User_Fields:
+                # create a custom field
+                ClientUserCustomField.objects.create(
+                    user=serializer.instance,
+                    key=key,
+                    value=self.request.data[key]
+                )
+
         if login_type is None: # if login type is not provided, set it to Email
             password = self.request.data.get('password')
             if not password:
                 raise ValidationError({"password": "Password is required for Email login type."})
 
             # hash the password
-            print("hashed password", make_password(password))
             serializer.save(password=make_password(password))
+
+
+        # Increase the user count in the ClientApp
+        client_app.no_of_users += 1
+        client_app.save()
+
 
 
 

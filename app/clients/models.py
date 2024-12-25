@@ -2,30 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import uuid
 
-class API_PLANS(models.TextChoices):
-    FREE = 'FREE', 'Free'
-    BASIC = 'BASIC', 'Basic'
-    PREMIUM = 'PREMIUM', 'Premium'
-
-class ClientApp(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-    no_of_users = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    # API details
-    api_key = models.CharField(max_length=255, unique=True, blank=True, null=True)
-    api_key_expires = models.DateTimeField(null=True, blank=True)
-    plan = models.CharField(max_length=10, choices=API_PLANS.choices, default=API_PLANS.FREE)
-
-    # Foreign key to reference User of Main App
-    owner = models.ForeignKey('core.User', related_name='client_apps', on_delete=models.CASCADE, null=True, blank=True)
-
-
-    def __str__(self):
-        return self.name
-
+class PAYMENT_STATUS(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    COMPLETED = 'COMPLETED', 'Completed'
+    FAILED = 'FAILED', 'Failed'
 
 class LOGIN_TYPE(models.TextChoices):
     Email = 'Email', 'Email'
@@ -35,6 +15,54 @@ class LOGIN_TYPE(models.TextChoices):
 class ROLE(models.TextChoices):
     ADMIN = 'ADMIN', 'Admin'
     USER = 'USER ', 'User'
+
+
+
+class ApiPlan(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    max_requests_per_month = models.IntegerField()
+    max_users = models.IntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class ClientApp(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    no_of_users = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Foreign key to reference User of Main App
+    owner = models.ForeignKey('core.User', related_name='client_apps', on_delete=models.CASCADE, null=True, blank=True)
+
+
+    def __str__(self):
+        return self.name
+
+class Subscription(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    client_app = models.ForeignKey('ClientApp', related_name='subscriptions', on_delete=models.CASCADE)
+    plan = models.ForeignKey('ApiPlan', related_name='subscriptions', on_delete=models.CASCADE)
+
+    # API details
+    api_key = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    api_key_expires = models.DateTimeField(null=True, blank=True)
+
+
+    def __str__(self):
+        return f"{self.client_app.name} - {self.start_date} to {self.end_date}"
+
 
 
 class ClientUser(models.Model):
@@ -67,11 +95,6 @@ class ClientUser(models.Model):
 
 
 
-class PAYMENT_STATUS(models.TextChoices):
-    PENDING = 'PENDING', 'Pending'
-    COMPLETED = 'COMPLETED', 'Completed'
-    FAILED = 'FAILED', 'Failed'
-
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     amount = models.FloatField()
@@ -84,11 +107,9 @@ class Payment(models.Model):
     provider_payment_id = models.CharField(max_length=255, null=True, blank=True)
     provider_signature = models.CharField(max_length=255, null=True, blank=True)
 
+    subscription = models.ForeignKey('Subscription', related_name='payments', on_delete=models.CASCADE)
+
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # Foreign key to reference ClientApp
-    client_app = models.ForeignKey('ClientApp', related_name='payments', on_delete=models.CASCADE)
-
     def __str__(self):
         return f"Payment for {self.client_app.name} - {self.amount} {self.currency}"
 

@@ -19,12 +19,65 @@ def generate_api_key():
     return uuid.uuid4().hex
 
 
+
+env = environ.Env()
+environ.Env.read_env()
+
 # For Owner to manage Subscriptions
 class SubscriptionListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, isOwner]
 
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+
+    def perform_create(self, serializer):
+        plan = self.request.data['plan']
+
+        if plan == 'Free':
+            no_of_days = 365
+        else:
+            no_of_days = self.request.data['no_of_days']
+
+        # Get this info from login user, he will be owner
+        client_app = ClientApp.objects.get(owner = self.request.user)
+
+        # Get this info from plan selected by user i.e(Free, Basic, Premium), i.e in request.data
+        api_plan = ApiPlan.objects.get(name = plan)
+
+        subs_end_date = now() + timedelta(days= no_of_days)
+
+        subscription = Subscription.objects.create(
+            end_date = subs_end_date,
+            client_app = client_app,
+            plan = api_plan,
+        )
+
+        amount = self.request.data['amount']
+
+        # If plan is free then no need to create payment
+        if plan == 'Free':
+            serializer.save(subscription=subscription)
+            return
+
+
+        # setup razorpay client this is the client to whome user is paying money that's you
+        client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
+
+        # create razorpay order
+        payment = client.order.create({"amount": int(amount),
+                                        "currency": "INR",
+                                        "payment_capture": "1"})
+
+        payment = Payment.objects.create(
+            amount=amount,
+            subscription=subscription,
+            order_id=payment['id']
+        )
+
+        serializer.save(payment=payment)
+
+
+
 
 
 class SubscriptionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -37,17 +90,14 @@ class SubscriptionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVie
 #* --------------------------------------------- *#
 
 
-env = environ.Env()
-
-# you have to create .env file in same folder where you are using environ.Env()
-# reading .env file which located in api folder
-environ.Env.read_env()
-
-
+"""
 @api_view(['POST'])
 def start_payment(request):
     # request.data is coming from frontend
     amount = request.data['amount']
+    no_of_days = request.data['no_of_days']
+    logged_in_user = request.user
+
 
     # setup razorpay client this is the client to whome user is paying money that's you
     client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
@@ -57,10 +107,13 @@ def start_payment(request):
                                    "currency": "INR",
                                    "payment_capture": "1"})
 
-    client_app = ClientApp.objects.get(owner = "123")
-    api_plan = ApiPlan.objects.get(id = "123e4567-e89b-12d3-a456-426614174001")
+    # Get this info from login user, he will be owner
+    client_app = ClientApp.objects.get(owner = logged_in_user)
 
-    subs_end_date = now() + timedelta(days=30)
+    # Get this info from plan selected by user i.e(Free, Basic, Premium), i.e in request.data
+    api_plan = ApiPlan.objects.get(name = request.data['plan'])
+
+    subs_end_date = now() + timedelta(days=no_of_days)
 
     subscription = Subscription.objects.create(
         end_date = subs_end_date,
@@ -78,7 +131,7 @@ def start_payment(request):
 
 
     return Response(serializer.data)
-
+"""
 
 @api_view(['POST'])
 def handle_payment_success(request):
@@ -138,3 +191,7 @@ def handle_payment_success(request):
     }
 
     return Response(res_data)
+
+
+
+

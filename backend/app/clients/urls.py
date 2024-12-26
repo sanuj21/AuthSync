@@ -13,6 +13,7 @@ urlpatterns = [
 
     # For Owner to manage Subscriptions
     path('<uuid:app_pk>/subscriptions/', subscription_views.SubscriptionListCreateView.as_view(), name='subscription_list_create'),
+    path('payment_success/', subscription_views.handle_payment_success, name="payment_success"),
     path('<uuid:app_pk>/subscriptions/<uuid:subscription_pk>/', subscription_views.SubscriptionRetrieveUpdateDestroyView.as_view(), name='subscription_retrieve_update_destroy'),
 
     # For Client User to register, login, update, reset password, and verify email
@@ -23,7 +24,4 @@ urlpatterns = [
     path('<uuid:app_pk>/users/reset-password/<uuid:user_pk>/', client_user_views.ClientUserResetPasswordView.as_view(), name='client_user_reset_password'),
     path('<uuid:app_pk>/users/verify-email/<uuid:user_pk>/', client_user_views.ClientUserVerifyEmailView.as_view(), name='client_user_verify_email'),
 
-    # Payment related views
-    path('pay/', subscription_views.start_payment, name="payment"),
-    path('payment/success/', subscription_views.handle_payment_success, name="payment_success")
 ]

@@ -27,6 +27,8 @@ class ApiPlan(models.Model):
     currency = models.CharField(max_length=10, default='INR')
     max_requests_per_day = models.IntegerField()
     max_users = models.IntegerField()
+    # we will keep pricing for 30 days only, and calculate accordingly by giving discounts on longer durations
+    duration = models.IntegerField(default=30)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

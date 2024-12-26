@@ -7,3 +7,9 @@ class RegisterUserView(generics.CreateAPIView):
     """"API View for registering a user"""
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+
+
+class PlanListView(generics.ListAPIView):
+    """"API View for listing plans"""
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer

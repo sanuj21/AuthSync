@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import FormLayout from "../Layout/FormLayout";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../ultilities/apiConfig";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -16,14 +17,15 @@ function Login() {
       password,
     };
     try {
-      const res = await axios({
+      const res = await apiClient({
         method: "post",
-        url: import.meta.env.VITE_BACKEND_URL + "/api/login/",
+        url: "/api/login/",
         data,
       });
 
       if (res.status === 200) {
         localStorage.setItem("token", res.data.access);
+        localStorage.setItem("refresh", res.data.refresh);
         setTimeout(() => {
           navigate("/");
         });

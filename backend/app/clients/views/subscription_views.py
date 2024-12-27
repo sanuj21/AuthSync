@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
 
 from ..serializers import SubscriptionSerializer, PaymentSerializer
@@ -24,22 +25,20 @@ env = environ.Env()
 environ.Env.read_env()
 
 # For Owner to manage Subscriptions
-class SubscriptionListCreateView(generics.ListCreateAPIView):
+
+class SubscriptionListCreateView(APIView):
     permission_classes = [IsAuthenticated, isOwner]
 
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-
-    def perform_create(self, serializer):
-        plan = self.request.data['plan']
+    def post(self, request, *args, **kwargs):
+        plan = request.data['plan']
 
         if plan == 'Free':
             no_of_days = 365
         else:
-            no_of_days = self.request.data['no_of_days']
+            no_of_days = request.data['no_of_days']
 
-        # Get this info from login user, he will be owner
-        client_app = ClientApp.objects.get(owner = self.request.user)
+        # Get the client id from app_pk url
+        client_app = ClientApp.objects.get(id=self.kwargs['app_pk'])
 
         # Get this info from plan selected by user i.e(Free, Basic, Premium), i.e in request.data
         api_plan = ApiPlan.objects.get(name = plan)
@@ -50,21 +49,22 @@ class SubscriptionListCreateView(generics.ListCreateAPIView):
             end_date = subs_end_date,
             client_app = client_app,
             plan = api_plan,
+            api_key = generate_api_key(),
+            api_key_expires = subs_end_date
         )
 
-        amount = self.request.data['amount']
+        amount = request.data['amount']
 
         # If plan is free then no need to create payment
         if plan == 'Free':
-            serializer.save(subscription=subscription)
-            return
+            return Response(SubscriptionSerializer(subscription).data)
 
 
         # setup razorpay client this is the client to whome user is paying money that's you
         client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
 
         # create razorpay order
-        payment = client.order.create({"amount": int(amount),
+        payment = client.order.create({"amount": int(amount) * 100,
                                         "currency": "INR",
                                         "payment_capture": "1"})
 
@@ -74,9 +74,21 @@ class SubscriptionListCreateView(generics.ListCreateAPIView):
             order_id=payment['id']
         )
 
-        serializer.save(payment=payment)
+        paymentSerializer = PaymentSerializer(payment)
+        subscriptionSerializer = SubscriptionSerializer(subscription)
+
+        response_data = {
+            "subscription": subscriptionSerializer.data,
+            "payment": paymentSerializer.data
+        }
+
+        return Response(response_data)
 
 
+    def get(self, request, *args, **kwargs):
+        subscriptions = Subscription.objects.filter(client_app=self.kwargs['app_pk'])
+        serializer = SubscriptionSerializer(subscriptions, many=True)
+        return Response(serializer.data)
 
 
 
@@ -185,6 +197,11 @@ def handle_payment_success(request):
     payment.provider_order_id = ord_id
     payment.provider_signature = raz_signature
     payment.save()
+
+    subscription = payment.subscription
+    subscription.is_Active = True
+    subscription.save()
+
 
     res_data = {
         'message': 'payment successfully received!'

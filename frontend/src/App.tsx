@@ -6,6 +6,9 @@ import Dashboard from "./Page/Dashboard";
 import Register from "./Page/Register";
 import Login from "./Page/Login";
 import CreateApp from "./Page/CreateApp";
+import { scheduleTokenRefresh } from "./ultilities/tokenRefresh";
+
+scheduleTokenRefresh();
 
 const router = createBrowserRouter([
   {

@@ -38,15 +38,13 @@ function App() {
   };
 
   // this will load a script tag which will open up Razorpay payment card to make //transactions
-  const loadScript = () => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    document.body.appendChild(script);
-  };
+  // const loadScript = () => {
+  //   const script = document.createElement("script");
+  //   script.src = "";
+  //   document.body.appendChild(script);
+  // };
 
   const showRazorpay = async () => {
-    await loadScript();
-
     let bodyData = new FormData();
 
     // we will pass the amount and product name to the backend using form data

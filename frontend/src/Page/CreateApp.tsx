@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import FormLayout from "../Layout/FormLayout";
 import axios from "axios";
 import { openRazorpay } from "../ultilities/payment";
+import apiClient from "../ultilities/apiConfig";
 
 interface Plan {
   id: number;
@@ -13,7 +14,7 @@ function CreateApp() {
   const [step, setStep] = useState(1);
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState();
+  const [selectedPlan, setSelectedPlan] = useState("Free");
   const [duration, setDuration] = useState(1);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -22,12 +23,9 @@ function CreateApp() {
   useEffect(() => {
     const getPlans = async () => {
       try {
-        const res = await axios({
+        const res = await apiClient({
           method: "get",
-          url: import.meta.env.VITE_BACKEND_URL + "/api/plans/",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          url: "/api/plans/",
         });
 
         setPlans(res.data);
@@ -49,16 +47,11 @@ function CreateApp() {
       description,
     };
 
-    console.log(localStorage.getItem("token"));
-
     try {
-      const res = await axios({
+      const res = await apiClient({
         method: "post",
-        url: import.meta.env.VITE_BACKEND_URL + "/api/client-app/",
+        url: "/api/client-app/",
         data,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
       });
 
       console.log(res);
@@ -72,25 +65,20 @@ function CreateApp() {
   };
 
   const createSubscription = async () => {
+    const amount =
+      (plans.find((p: any) => p.name === selectedPlan)?.price || 0) * duration;
+
     const data = {
       no_of_days: duration * 30,
-      selectedPlan,
-      amount:
-        (plans.find((p: any) => p.name === selectedPlan)?.price || 0) *
-        duration,
+      plan: selectedPlan,
+      amount,
     };
 
     try {
-      const res = await axios({
+      const res = await apiClient({
         method: "post",
-        url:
-          import.meta.env.VITE_BACKEND_URL +
-          `/api/client-app/${createApp.id}/subscriptions/`,
+        url: `/api/client-app/${createdApp.id}/subscriptions/`,
         data,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
       });
 
       if (selectedPlan != "Free") {
@@ -99,7 +87,7 @@ function CreateApp() {
         console.log("Created a free subscription");
       }
     } catch (error) {
-      console.log(console.error());
+      console.log(error);
     }
   };
 
@@ -131,6 +119,8 @@ function CreateApp() {
                 id="name"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="My App"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
 
@@ -146,6 +136,8 @@ function CreateApp() {
                 id="description"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Description of the app"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
           </div>
@@ -165,6 +157,8 @@ function CreateApp() {
                 name="duration"
                 id="duration"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={duration}
+                onChange={(e) => setDuration(parseInt(e.target.value))}
               >
                 <option value="1">1 Month</option>
                 <option value="3">3 Months</option>
@@ -185,6 +179,8 @@ function CreateApp() {
                 name="plan"
                 id="plan"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                value={selectedPlan}
+                onChange={(e) => setSelectedPlan(e.target.value)}
               >
                 {plans.map((plan: any) => (
                   <option key={plan.id} value={plan.name}>

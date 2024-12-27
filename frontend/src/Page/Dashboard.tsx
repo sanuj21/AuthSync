@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import apiClient from "../ultilities/apiConfig";
 
 function Dashboard() {
   const [myAppData, setMyAppData] = useState([]);
@@ -8,12 +9,9 @@ function Dashboard() {
   useEffect(() => {
     const getMyAppData = async () => {
       try {
-        const res = await axios({
+        const res = await apiClient({
           method: "get",
-          url: import.meta.env.VITE_BACKEND_URL + "/api/client-app/",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          url: "/api/client-app/",
         });
 
         setMyAppData(res.data);

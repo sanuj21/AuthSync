@@ -1,11 +1,5 @@
 import axios from "axios";
-
-// this will load a script tag which will open up Razorpay payment card to make //transactions
-export const loadScript = () => {
-  const script = document.createElement("script");
-  script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  document.body.appendChild(script);
-};
+import apiClient from "./apiConfig";
 
 const handlePaymentSuccess = async (data: any) => {
   try {
@@ -14,8 +8,8 @@ const handlePaymentSuccess = async (data: any) => {
     // we will send the response we've got from razorpay to the backend to validate the payment
     bodyData.append("response", JSON.stringify(data));
 
-    const res = await axios({
-      url: `${import.meta.env.VITE_BACKEND_URL}/client-app/payment/success/`,
+    const res = await apiClient({
+      url: `/api/client-app/payment/success/`,
       method: "POST",
       data: bodyData,
       headers: {
@@ -36,12 +30,12 @@ export const openRazorpay = (res) => {
   let options = {
     key_id: import.meta.env.VITE_RAZORPAY_PUBLIC_KEY, // in react your environment variable must start with REACT_APP_
     key_secret: import.meta.env.VITE_RAZORPAY_SECRET_KEY,
-    amount: res.data.amount,
+    amount: res.data.payment.amount,
     currency: "INR",
     name: "AuthSync",
     description: "Subscription",
     image: "", // add image url
-    order_id: res.data.order_id,
+    order_id: res.data.payment.order_id,
     handler: function (response: any) {
       // we will handle success by calling handlePaymentSuccess method and
       // will pass the response that we've got from razorpay
@@ -59,6 +53,8 @@ export const openRazorpay = (res) => {
       color: "#3399cc",
     },
   };
+
+  console.log(options);
 
   let rzp1 = new window.Razorpay(options);
   rzp1.open();

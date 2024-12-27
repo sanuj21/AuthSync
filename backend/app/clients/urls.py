@@ -13,7 +13,7 @@ urlpatterns = [
 
     # For Owner to manage Subscriptions
     path('<uuid:app_pk>/subscriptions/', subscription_views.SubscriptionListCreateView.as_view(), name='subscription_list_create'),
-    path('payment_success/', subscription_views.handle_payment_success, name="payment_success"),
+    path('payment/success/', subscription_views.handle_payment_success, name="payment_success"),
     path('<uuid:app_pk>/subscriptions/<uuid:subscription_pk>/', subscription_views.SubscriptionRetrieveUpdateDestroyView.as_view(), name='subscription_retrieve_update_destroy'),
 
     # For Client User to register, login, update, reset password, and verify email

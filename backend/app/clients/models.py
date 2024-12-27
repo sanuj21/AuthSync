@@ -52,8 +52,8 @@ class ClientApp(models.Model):
 class Subscription(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     start_date = models.DateTimeField(auto_now_add=True)
-    end_date = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=False)
 
     client_app = models.ForeignKey('ClientApp', related_name='subscriptions', on_delete=models.CASCADE)
     plan = models.ForeignKey('ApiPlan', related_name='subscriptions', on_delete=models.CASCADE)
@@ -106,7 +106,7 @@ class Payment(models.Model):
     order_id = models.CharField(max_length=255, null=True, blank=True)
 
     # Payment provider details
-    provider = models.CharField(max_length=50)  # e.g., "razorpay", "stripe", "paypal"
+    provider = models.CharField(max_length=50, default="razorpay")  # e.g., "razorpay", "stripe", "paypal"
     provider_order_id = models.CharField(max_length=255, null=True, blank=True)
     provider_payment_id = models.CharField(max_length=255, null=True, blank=True)
     provider_signature = models.CharField(max_length=255, null=True, blank=True)

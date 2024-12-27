@@ -102,49 +102,6 @@ class SubscriptionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVie
 #* --------------------------------------------- *#
 
 
-"""
-@api_view(['POST'])
-def start_payment(request):
-    # request.data is coming from frontend
-    amount = request.data['amount']
-    no_of_days = request.data['no_of_days']
-    logged_in_user = request.user
-
-
-    # setup razorpay client this is the client to whome user is paying money that's you
-    client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
-
-    # create razorpay order
-    payment = client.order.create({"amount": int(amount),
-                                   "currency": "INR",
-                                   "payment_capture": "1"})
-
-    # Get this info from login user, he will be owner
-    client_app = ClientApp.objects.get(owner = logged_in_user)
-
-    # Get this info from plan selected by user i.e(Free, Basic, Premium), i.e in request.data
-    api_plan = ApiPlan.objects.get(name = request.data['plan'])
-
-    subs_end_date = now() + timedelta(days=no_of_days)
-
-    subscription = Subscription.objects.create(
-        end_date = subs_end_date,
-        client_app = client_app,
-        plan = api_plan,
-    )
-
-    payment = Payment.objects.create(
-                                amount=amount,
-                                subscription=subscription,
-                                order_id=payment['id'])
-
-
-    serializer = PaymentSerializer(payment)
-
-
-    return Response(serializer.data)
-"""
-
 @api_view(['POST'])
 def handle_payment_success(request):
     # request.data is coming from frontend

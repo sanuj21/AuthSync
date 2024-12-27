@@ -1,14 +1,17 @@
 
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from rest_framework.permissions import IsAuthenticated
 
-from ..models import ClientApp, ClientUser
+from ..models import ClientApp, ClientUser, Subscription
 from ..permissions import isOwner
-from ..serializers import ClientUserSerializer, ClientAppSerializer
+from ..serializers import ClientUserSerializer, ClientAppSerializer, SubscriptionSerializer
 
+"""
 class ClientAppListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -22,6 +25,23 @@ class ClientAppListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # Filter ClientApps to only those owned by the authenticated user
         return ClientApp.objects.filter(owner=self.request.user)
+"""
+
+class ClientAppListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        client_apps = ClientApp.objects.filter(owner=request.user)
+        clientSerializer = ClientAppSerializer(client_apps, many=True)
+        return Response(clientSerializer.data)
+
+    def post(self, request):
+
+        serializer = ClientAppSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
 
 

@@ -27,7 +27,7 @@ class ClientUserRegisterView(generics.CreateAPIView):
 
         # Checking if no_of_users is less than max_users
         subs_plan = Subscription.objects.get(client_app=client_app)
-        if client_app.no_of_users >= subs_plan.max_users:
+        if client_app.no_of_users >= subs_plan.plan.max_users:
             raise ValidationError({"max_users": "Maximum number of users reached."})
 
 

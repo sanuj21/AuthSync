@@ -20,6 +20,8 @@ const handlePaymentSuccess = async (data: any) => {
 
     if ((res.status = 200)) {
       console.log("Everything is OK!");
+      alert("Payment Successful");
+      window.location.href = "/";
     }
   } catch (error) {
     console.log(console.error());

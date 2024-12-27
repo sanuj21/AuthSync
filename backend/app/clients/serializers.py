@@ -2,7 +2,29 @@ from rest_framework import serializers
 from .models import ClientApp, ClientUser, ClientUserCustomField, Subscription, Payment, ApiPlan
 from datetime import timedelta
 
+class SubscriptionSerializer(serializers.ModelSerializer):
+    # payment = PaymentSerializer(write_only = True)
+
+    no_of_days = serializers.IntegerField(write_only=True, required=True, min_value=1) # Add validationclient
+    amount = serializers.FloatField(write_only=True, required=False, default=0.0)
+    client_app = serializers.PrimaryKeyRelatedField(read_only=True)
+    plan = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        extra_kwargs = {
+            'start_date': {'read_only': True},
+            'end_date': {'read_only': True},
+            'api_key': {'read_only': True},
+            'api_key_expires': {'read_only': True},
+
+        }
+
+
 class ClientAppSerializer(serializers.ModelSerializer):
+    subscriptions = SubscriptionSerializer(many=True, read_only=True)
+
     class Meta:
         model = ClientApp
         fields = '__all__'
@@ -27,24 +49,6 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    # payment = PaymentSerializer(write_only = True)
-
-    no_of_days = serializers.IntegerField(write_only=True, required=True, min_value=1) # Add validationclient
-    amount = serializers.FloatField(write_only=True, required=False, default=0.0)
-    client_app = serializers.PrimaryKeyRelatedField(read_only=True)
-    plan = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    class Meta:
-        model = Subscription
-        fields = '__all__'
-        extra_kwargs = {
-            'start_date': {'read_only': True},
-            'end_date': {'read_only': True},
-            'api_key': {'read_only': True},
-            'api_key_expires': {'read_only': True},
-
-        }
 
 
     # while creating i am passing, no_of_days as extra info which i'll use to calculate end_date

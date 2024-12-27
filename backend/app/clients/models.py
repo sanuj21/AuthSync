@@ -53,7 +53,7 @@ class Subscription(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     client_app = models.ForeignKey('ClientApp', related_name='subscriptions', on_delete=models.CASCADE)
     plan = models.ForeignKey('ApiPlan', related_name='subscriptions', on_delete=models.CASCADE)

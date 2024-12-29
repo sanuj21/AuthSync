@@ -2,13 +2,17 @@ from rest_framework import serializers
 from .models import ClientApp, ClientUser, ClientUserCustomField, Subscription, Payment, ApiPlan
 from datetime import timedelta
 
+class ApiPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApiPlan
+        fields = '__all__'
 class SubscriptionSerializer(serializers.ModelSerializer):
     # payment = PaymentSerializer(write_only = True)
 
     no_of_days = serializers.IntegerField(write_only=True, required=True, min_value=1) # Add validationclient
     amount = serializers.FloatField(write_only=True, required=False, default=0.0)
     client_app = serializers.PrimaryKeyRelatedField(read_only=True)
-    plan = serializers.PrimaryKeyRelatedField(read_only=True)
+    plan = ApiPlanSerializer(read_only=True)
 
     class Meta:
         model = Subscription
@@ -58,7 +62,3 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 
-class ApiPlanSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ApiPlan
-        fields = '__all__'

@@ -45,6 +45,18 @@ class SubscriptionListCreateView(APIView):
 
         subs_end_date = now() + timedelta(days= no_of_days)
 
+        isPrevSubs = Subscription.objects.filter(client_app=client_app, end_date__gte=now(), is_active=True).exists()
+
+
+        if isPrevSubs:
+            return Response({'error': 'You already have an active subscription', 'message': 'If you want to change your plan, please cancel the current subscription first.'}, status=400)
+
+        isPrevSubs = Subscription.objects.filter(client_app=client_app, end_date__gte=now(), is_active=False).exists()
+
+        if isPrevSubs:
+            prev_subs = Subscription.objects.get(client_app=client_app, end_date__gte=now(), is_active=False)
+            prev_subs.delete()
+
         subscription = Subscription.objects.create(
             end_date = subs_end_date,
             client_app = client_app,
@@ -57,6 +69,8 @@ class SubscriptionListCreateView(APIView):
 
         # If plan is free then no need to create payment
         if plan == 'Free':
+            subscription.is_active = True
+            subscription.save()
             return Response(SubscriptionSerializer(subscription).data)
 
 
@@ -156,7 +170,7 @@ def handle_payment_success(request):
     payment.save()
 
     subscription = payment.subscription
-    subscription.is_Active = True
+    subscription.is_active = True
     subscription.save()
 
 

@@ -41,6 +41,9 @@ class ClientUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientUser
         fields = ['id', 'email', 'username', 'name', 'avatar', 'is_active', 'role', 'login_type', 'client_app', 'custom_fields']
+        extra_kwargs = {
+            'client_app': {'read_only': True},
+        }
 
 
 class PaymentSerializer(serializers.ModelSerializer):

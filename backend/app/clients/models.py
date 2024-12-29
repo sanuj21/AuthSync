@@ -14,7 +14,7 @@ class LOGIN_TYPE(models.TextChoices):
 
 class ROLE(models.TextChoices):
     ADMIN = 'ADMIN', 'Admin'
-    USER = 'USER ', 'User'
+    USER = 'USER', 'User'
 
 
 

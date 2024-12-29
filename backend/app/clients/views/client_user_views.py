@@ -92,8 +92,9 @@ class ClientUserLoginView(generics.GenericAPIView):
 
 
 
+
 class ClientUserMyProfileView(generics.GenericAPIView):
-    authentication_classes = [ClientUserJWTAuthentication]
+    authentication_classes = [ClientUserJWTAuthentication, ClientAPIKeyAuthentication]
 
     queryset = ClientUser.objects.all()
     serializer_class = ClientUserSerializer

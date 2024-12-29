@@ -7,6 +7,7 @@ import Register from "./Page/Register";
 import Login from "./Page/Login";
 import CreateApp from "./Page/CreateApp";
 import { scheduleTokenRefresh } from "./ultilities/tokenRefresh";
+import { ProtectedRoute } from "./components/ProtectedRoutes";
 
 scheduleTokenRefresh();
 
@@ -18,7 +19,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Dashboard />,
+        element: (
+          <ProtectedRoute>
+            {" "}
+            <Dashboard />{" "}
+          </ProtectedRoute>
+        ),
       },
 
       {
@@ -33,7 +39,12 @@ const router = createBrowserRouter([
 
       {
         path: "/createApp",
-        element: <CreateApp />,
+        element: (
+          <ProtectedRoute>
+            {" "}
+            <CreateApp />{" "}
+          </ProtectedRoute>
+        ),
       },
     ],
   },

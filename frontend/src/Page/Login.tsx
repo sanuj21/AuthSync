@@ -7,10 +7,20 @@ import apiClient from "../ultilities/apiConfig";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (loading) return;
+
+    if (!email || !password) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
 
     const data = {
       email,
@@ -23,15 +33,18 @@ function Login() {
         data,
       });
 
-      if (res.status === 200) {
+      if (res?.status === 200) {
         localStorage.setItem("token", res.data.access);
         localStorage.setItem("refresh", res.data.refresh);
-        setTimeout(() => {
-          navigate("/");
-        });
+        navigate("/");
+      } else {
+        alert("Something went wrong");
       }
     } catch (error) {
       console.log(error);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 

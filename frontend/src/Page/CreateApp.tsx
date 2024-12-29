@@ -3,6 +3,7 @@ import FormLayout from "../Layout/FormLayout";
 import axios from "axios";
 import { openRazorpay } from "../ultilities/payment";
 import apiClient from "../ultilities/apiConfig";
+import { useNavigate } from "react-router-dom";
 
 interface Plan {
   id: number;
@@ -15,10 +16,13 @@ function CreateApp() {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState("Free");
-  const [duration, setDuration] = useState(1);
+  const [duration, setDuration] = useState(12);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [createdApp, setCreatedApp] = useState();
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getPlans = async () => {
@@ -42,6 +46,15 @@ function CreateApp() {
   }, []);
 
   const createApp = async () => {
+    if (!name || !description) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    if (loading) return;
+
+    setLoading(true);
+
     const data = {
       name,
       description,
@@ -61,12 +74,19 @@ function CreateApp() {
       setStep(2);
     } catch (error) {
       console.log(console.error());
+    } finally {
+      setLoading(false);
     }
   };
 
   const createSubscription = async () => {
     const amount =
       (plans.find((p: any) => p.name === selectedPlan)?.price || 0) * duration;
+
+    if (!createdApp) {
+      alert("Something went wrong!, App not created, try again");
+      return;
+    }
 
     const data = {
       no_of_days: duration * 30,
@@ -84,7 +104,11 @@ function CreateApp() {
       if (selectedPlan != "Free") {
         openRazorpay(res);
       } else {
-        console.log("Created a free subscription");
+        alert("Subscription created successfully");
+
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
       }
     } catch (error) {
       console.log(error);
@@ -106,7 +130,7 @@ function CreateApp() {
       <form onSubmit={handleSubmit}>
         {step === 1 && (
           <div>
-            <div>
+            <div className="mb-5">
               <label
                 htmlFor="name"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -124,7 +148,7 @@ function CreateApp() {
               />
             </div>
 
-            <div>
+            <div className="mb-5">
               <label
                 htmlFor="description"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -145,7 +169,7 @@ function CreateApp() {
 
         {step === 2 && (
           <div>
-            <div>
+            <div className="mb-5">
               <label
                 htmlFor="duration"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -188,6 +212,31 @@ function CreateApp() {
                   </option>
                 ))}
               </select>
+
+              <div className="mt-5">
+                <p className="text-gray-900 dark:text-white">
+                  Amount:{" "}
+                  {plans.find((p: any) => p.name === selectedPlan)?.price *
+                    duration || 0}
+                </p>
+
+                <p className="text-gray-900 dark:text-white">
+                  Duration: {duration} Months
+                </p>
+
+                <p className="text-gray-900 dark:text-white">
+                  Plan: {selectedPlan}
+                </p>
+
+                <p className="text-gray-900 dark:text-white">
+                  Total:{" "}
+                  {plans.find((p: any) => p.name === selectedPlan)?.price *
+                    duration || 0}
+                  {selectedPlan != "Free" && (
+                    <span className="text-sm text-gray-500"> (Payable)</span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -196,7 +245,7 @@ function CreateApp() {
           type="submit"
           className="w-full py-3 mt-4 bg-primary-600 rounded-md text-white text-sm hover:bg-primary-700"
         >
-          {step === 1 ? "Create App" : "Create Subscription"}
+          {step === 1 ? "Create App" : "Pay and Start Subscription"}
         </button>
       </form>
     </FormLayout>

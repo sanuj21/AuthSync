@@ -5,9 +5,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password, check_password
+from django.shortcuts import redirect
+from django.conf import settings
+from rest_framework.views import APIView
+from ..services.oauth_service import createJwtToken
 
 from ..models import ClientApp, ClientUser, ClientUserCustomField, Subscription
-from ..serializers import ClientUserSerializer
+from ..serializers import ClientUserSerializer, OAuthSerializer
 from ..authentications import ClientAPIKeyAuthentication, ClientUserJWTAuthentication
 
 
@@ -91,6 +95,26 @@ class ClientUserLoginView(generics.GenericAPIView):
         }, status=status.HTTP_200_OK)
 
 
+# Login in client user via Oauth
+class ClientUserGoogleLoginView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        auth_serializer = OAuthSerializer(data=request.GET)
+        auth_serializer.is_valid(raise_exception=True)
+
+        validated_data = auth_serializer.validated_data
+        user_data, access_token, refresh = createJwtToken(validated_data)
+
+        response = redirect(settings.BASE_APP_URL)
+        response.set_cookie('access_token', access_token, max_age = 60 * 24 * 60 * 1) # 1 day
+        response.set_cookie('refresh_token', str(refresh), max_age = 60 * 24 * 60 * 60) # 60 days
+
+        return response
+
+    def post(self, request, *args, **kwargs):
+        pass
+
+# End of Oauth login
 
 
 class ClientUserMyProfileView(generics.GenericAPIView):
@@ -103,6 +127,9 @@ class ClientUserMyProfileView(generics.GenericAPIView):
         client_user = request.client_user
         serializer = self.serializer_class(client_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 
 
 class ClientUserUpdateView(generics.GenericAPIView):

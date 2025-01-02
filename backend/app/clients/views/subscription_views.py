@@ -1,8 +1,8 @@
 import uuid
 import razorpay
-import environ
 import json
 from datetime import timedelta
+from django.conf import settings
 from django.utils.timezone import now
 
 from rest_framework.decorators import api_view
@@ -20,9 +20,6 @@ def generate_api_key():
     return uuid.uuid4().hex
 
 
-
-env = environ.Env()
-environ.Env.read_env()
 
 # For Owner to manage Subscriptions
 
@@ -75,7 +72,7 @@ class SubscriptionListCreateView(APIView):
 
 
         # setup razorpay client this is the client to whome user is paying money that's you
-        client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
+        client = razorpay.Client(auth=(settings.RAZORPAY_PUBLIC_KEY, settings.RAZORPAY_SECRET_KEY))
 
         # create razorpay order
         payment = client.order.create({"amount": int(amount) * 100,
@@ -151,7 +148,7 @@ def handle_payment_success(request):
         'razorpay_signature': raz_signature
     }
 
-    client = razorpay.Client(auth=(env('PUBLIC_KEY'), env('SECRET_KEY')))
+    client = razorpay.Client(auth=(settings.RAZORPAY_PUBLIC_KEY, settings.RAZORPAY_SECRET_KEY))
 
     # checking if the transaction is valid or not by passing above data dictionary in
     # razorpay client if it is "valid" then check will return None

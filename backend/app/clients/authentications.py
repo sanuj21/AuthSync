@@ -35,6 +35,7 @@ class ClientUserJWTAuthentication(JWTAuthentication):
         """
         Override authenticate to set request.client_user.
         """
+        print(request.headers, 'request.headers')
         result = super().authenticate(request)
         if result is not None:
             user, token = result
@@ -47,6 +48,7 @@ class ClientUserJWTAuthentication(JWTAuthentication):
         """
         Retrieve the ClientUser instance using the user_id from the token.
         """
+        print(validated_token, 'validated_token')
         try:
             user_id = validated_token.get("user_id")
             # Convert the user_id to UUID

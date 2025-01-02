@@ -14,6 +14,10 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from corsheaders.defaults import default_headers
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -166,3 +170,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
+BASE_API_URL = env('BASE_API_URL')
+BASE_APP_URL = env('BASE_APP_URL')
+AUTH_SECRET_KEY = env('AUTH_SECRET_KEY')
+GOOGLE_OAUTH2_CLIENT_ID = env('GOOGLE_OAUTH2_CLIENT_ID')
+GOOGLE_OAUTH2_CLIENT_SECRET = env('GOOGLE_OAUTH2_CLIENT_SECRET')
+
+# For Razorpay
+RAZORPAY_PUBLIC_KEY = env('RAZORPAY_PUBLIC_KEY')
+RAZORPAY_SECRET_KEY = env('RAZORPAY_SECRET_KEY')

@@ -57,6 +57,12 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 
+class OAuthSerializer(serializers.Serializer):
+    code = serializers.CharField(required=False)
+    error = serializers.CharField(required=False)
+
+
+
 
     # while creating i am passing, no_of_days as extra info which i'll use to calculate end_date
 

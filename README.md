@@ -22,7 +22,7 @@ git clone
 2. Change the directory
 
 ```bash
-cd authsync
+cd authsync/backend
 ```
 
 3. Build and run the docker containers

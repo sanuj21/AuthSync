@@ -11,12 +11,12 @@ GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
 
 def createJwtToken(validated_data):
-    redirect_uri = f'{settings.BASE_API_URL}/client-app/users/login/google/'
+    redirect_uri = f'{settings.BASE_API_URL}/client-app/users/login/google/callback'
 
     code = validated_data.get('code')
     error = validated_data.get('error')
 
-    login_url = f'{settings.BASE_APP_URL}/login'
+    login_url = f'{settings.CLIENT_APP_SETTINGS["BASE_APP_URL"]}/login'
 
     if error or not code:
         params = urlencode({'error': error})
@@ -54,8 +54,8 @@ def google_get_user_info(*, access_token: str) -> Dict[str, Any]:
 def google_get_access_token(*, code: str, redirect_uri: str) -> str:
     data = {
         'code': code,
-        'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-        'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+        'client_id': settings.CLIENT_APP_SETTINGS['GOOGLE_OAUTH2_CLIENT_ID'],
+        'client_secret': settings.CLIENT_APP_SETTINGS['GOOGLE_OAUTH2_CLIENT_SECRET'],
         'redirect_uri': redirect_uri,
         'grant_type': 'authorization_code'
     }

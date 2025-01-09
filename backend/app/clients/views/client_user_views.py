@@ -7,9 +7,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import redirect
 from django.conf import settings
+from urllib.parse import parse_qs
 from rest_framework.views import APIView
 from ..services.oauth_service import createJwtToken
-
+from ..utils import load_settings_from_db
 from ..models import ClientApp, ClientUser, ClientUserCustomField, Subscription
 from ..serializers import ClientUserSerializer, OAuthSerializer
 from ..authentications import ClientAPIKeyAuthentication, ClientUserJWTAuthentication
@@ -98,14 +99,23 @@ class ClientUserLoginView(generics.GenericAPIView):
 # Login in client user via Oauth
 class ClientUserGoogleLoginView(APIView):
 
+    authentication_classes = [ClientAPIKeyAuthentication]
+
+    def dispatch(self, request, *args, **kwargs):
+        # Loading the Oauth Keys
+        state = request.GET.get('state')
+        parsed_state = parse_qs(state)
+        client_app_id = parsed_state.get('client_app_id')[0]
+        load_settings_from_db(client_app_id)
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         auth_serializer = OAuthSerializer(data=request.GET)
         auth_serializer.is_valid(raise_exception=True)
 
         validated_data = auth_serializer.validated_data
         user_data, access_token, refresh = createJwtToken(validated_data)
-
-        response = redirect(settings.BASE_APP_URL)
+        response = redirect(settings.CLIENT_APP_SETTINGS['BASE_APP_URL'])
         response.set_cookie('access_token', access_token, max_age = 60 * 24 * 60 * 1) # 1 day
         response.set_cookie('refresh_token', str(refresh), max_age = 60 * 24 * 60 * 60) # 60 days
 

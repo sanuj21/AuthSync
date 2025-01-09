@@ -2,8 +2,9 @@ import uuid
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.utils.timezone import now
-from .models import ClientApp, ClientUser, Subscription
+from urllib.parse import parse_qs
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import ClientApp, ClientUser, Subscription
 
 
 class ClientAPIKeyAuthentication(BaseAuthentication):
@@ -13,6 +14,14 @@ class ClientAPIKeyAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
         api_key = request.headers.get("api-key")
+
+        # For Oauth
+        if not api_key:
+            state = request.GET.get('state')
+            parsed_state = parse_qs(state)
+            api_key = parsed_state.get('api_key', [None])[0]
+
+
         if not api_key:
             raise AuthenticationFailed("Client-API-Key is missing")
 

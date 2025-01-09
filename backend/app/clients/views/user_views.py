@@ -50,11 +50,14 @@ class ClientAppRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = ClientApp.objects.all()
     serializer_class = ClientAppSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'app_pk'
 
     # Restricting access to the client app details to the owner of the app
-    def get_queryset(self):
-        user = self.request.user
-        return self.queryset.filter(owner=user)
+    def get(self, request, *args, **kwargs):
+        app = self.get_object()
+        serializer = self.serializer_class(app)
+        return Response(serializer.data)
 
 
 class ClientUserListCreateView(generics.ListCreateAPIView):

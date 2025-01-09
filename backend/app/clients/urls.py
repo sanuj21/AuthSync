@@ -30,7 +30,7 @@ urlpatterns = [
     path('<uuid:app_pk>/users/login/', client_user_views.ClientUserLoginView.as_view(), name='client_user_login'),
 
     # Login in client user via Oauth (This is the endpoint that the client app will redirect to after the user logs in via Google)
-    path('users/login/google/', client_user_views.ClientUserGoogleLoginView.as_view(), name='client_user_google_login'),
+    path('users/login/google/callback', client_user_views.ClientUserGoogleLoginView.as_view(), name='client_user_google_login'),
 
     path('<uuid:app_pk>/users/my-profile/', client_user_views.ClientUserMyProfileView.as_view(), name='client_user_my_profile'),
     path('<uuid:app_pk>/users/update/<uuid:user_pk>/', client_user_views.ClientUserUpdateView.as_view(), name='client_user_update'),

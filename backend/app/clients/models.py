@@ -41,6 +41,7 @@ class ClientApp(models.Model):
     description = models.TextField(null=True, blank=True)
     no_of_users = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    settings = models.JSONField(null=True, blank=True)
 
     # Foreign key to reference User of Main App
     owner = models.ForeignKey('core.User', related_name='client_apps', on_delete=models.CASCADE, null=True, blank=True)

@@ -31,6 +31,10 @@ cd authsync/backend
 docker compose up --build
 ```
 
+## Database Architecture
+
+![Database Architechture](schema.png)
+
 ## Documentation
 
 The Documentation for using the AuthSync platform can be found [here](Documentation.md).
